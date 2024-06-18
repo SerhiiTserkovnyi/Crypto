@@ -36,13 +36,12 @@ public class MainController {
                     fileService.writeFile(filePath.replace(".txt", "[BRUTE_FORCED].txt"), bruteForceDecryptedText);
                     break;
                 default:
-                    System.err.println("Unknown command: " + command);
-                    System.exit(1);
+                    throw new IllegalArgumentException("Unknown command: " + command);
             }
         } catch (IOException e) {
-            System.err.println("Error reading or writing file: " + e.getMessage());
+            throw new RuntimeException("Error reading or writing file: " + e.getMessage(), e);
         } catch (NumberFormatException e) {
-            System.err.println("Key must be a number: " + e.getMessage());
+            throw new IllegalArgumentException("Key must be a number: " + e.getMessage(), e);
         }
     }
 }
