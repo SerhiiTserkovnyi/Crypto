@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class MainView extends JFrame {
     private JTextField filePathField;
@@ -13,6 +14,7 @@ public class MainView extends JFrame {
     private JTextField keyField;
     private JTextArea messageArea;
     private JButton executeButton;
+    private JButton browseButton;
     private MainController controller;
 
     public MainView(MainController controller) {
@@ -30,8 +32,11 @@ public class MainView extends JFrame {
 
         JLabel filePathLabel = new JLabel("File Path:");
         filePathField = new JTextField();
+        browseButton = new JButton("Browse...");
         inputPanel.add(filePathLabel);
         inputPanel.add(filePathField);
+        inputPanel.add(new JLabel());
+        inputPanel.add(browseButton);
 
         JLabel commandLabel = new JLabel("Command:");
         String[] commands = {"ENCRYPT", "DECRYPT", "BRUTE_FORCE"};
@@ -53,15 +58,21 @@ public class MainView extends JFrame {
         messageArea.setEditable(false);
         add(new JScrollPane(messageArea), BorderLayout.NORTH);
 
-        executeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                executeCommand();
-            }
-        });
+        browseButton.addActionListener(e -> openFileChooser());
+
+        executeButton.addActionListener(e -> executeCommand());
 
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    private void openFileChooser() {
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            filePathField.setText(selectedFile.getAbsolutePath());
+        }
     }
 
     private void executeCommand() {
