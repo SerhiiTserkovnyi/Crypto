@@ -82,4 +82,14 @@ public class CaesarCipher {
         }
         return matches;
     }
+
+    public void printAllDecryptions(String text) {
+        boolean isUkrainian = isUkrainianText(text);
+        String alphabet = isUkrainian ? UK_ALPHABET : EN_ALPHABET;
+
+        for (int key = 0; key < alphabet.length(); key++) {
+            String decryptedText = decrypt(text, key, isUkrainian);
+            System.out.println("Key " + key + ": " + decryptedText);
+        }
+    }
 }

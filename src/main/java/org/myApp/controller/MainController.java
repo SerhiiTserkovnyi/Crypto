@@ -14,7 +14,7 @@ public class MainController {
         this.fileService = new FileService();
     }
 
-    public void processCommand(String command, String filePath, String key) {
+    public String processCommand(String command, String filePath, String key) {
         try {
             String text = fileService.readFile(filePath);
 
@@ -24,24 +24,25 @@ public class MainController {
                     boolean isUkrainianEncrypt = caesarCipher.isUkrainianText(text);
                     String encryptedText = caesarCipher.encrypt(text, encryptKey, isUkrainianEncrypt);
                     fileService.writeFile(filePath.replace(".txt", "[ENCRYPTED].txt"), encryptedText);
-                    break;
+                    return "File encrypted successfully!";
                 case "DECRYPT":
                     int decryptKey = Integer.parseInt(key);
                     boolean isUkrainianDecrypt = caesarCipher.isUkrainianText(text);
                     String decryptedText = caesarCipher.decrypt(text, decryptKey, isUkrainianDecrypt);
                     fileService.writeFile(filePath.replace(".txt", "[DECRYPTED].txt"), decryptedText);
-                    break;
+                    return "File decrypted successfully!";
                 case "BRUTE_FORCE":
+                    caesarCipher.printAllDecryptions(text);
                     String bruteForceDecryptedText = caesarCipher.bruteForceDecrypt(text);
                     fileService.writeFile(filePath.replace(".txt", "[BRUTE_FORCED].txt"), bruteForceDecryptedText);
-                    break;
+                    return "File brute force decrypted successfully!";
                 default:
-                    throw new IllegalArgumentException("Unknown command: " + command);
+                    return "Unknown command: " + command;
             }
         } catch (IOException e) {
-            throw new RuntimeException("Error reading or writing file: " + e.getMessage(), e);
+            return "Error reading or writing file: " + e.getMessage();
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Key must be a number: " + e.getMessage(), e);
+            return "Key must be a number: " + e.getMessage();
         }
     }
 }

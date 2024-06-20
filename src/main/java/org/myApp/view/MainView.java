@@ -1,92 +1,103 @@
 package org.myApp.view;
 
 import org.myApp.controller.MainController;
+import org.myApp.model.CaesarCipher;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-public class MainView extends JFrame {
+public class MainView {
+    private JFrame frame;
     private JTextField filePathField;
-    private JComboBox<String> commandComboBox;
     private JTextField keyField;
     private JTextArea messageArea;
-    private JButton executeButton;
-    private JButton browseButton;
+    private JTextArea bruteForceResultsArea;
+    private JComboBox<String> commandComboBox;
     private MainController controller;
 
     public MainView(MainController controller) {
         this.controller = controller;
-        initializeUI();
+        initialize();
     }
 
-    private void initializeUI() {
-        setTitle("Caesar Cipher App");
-        setSize(400, 300);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+    public MainView() {
+        this.controller = new MainController();
+        initialize();
+    }
 
-        JPanel inputPanel = new JPanel(new GridLayout(4, 2));
+    private void initialize() {
+        frame = new JFrame("Caesar Cipher");
+        frame.setBounds(100, 100, 500, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.getContentPane().setLayout(new GridLayout(7, 1));
 
-        JLabel filePathLabel = new JLabel("File Path:");
         filePathField = new JTextField();
-        browseButton = new JButton("Browse...");
-        inputPanel.add(filePathLabel);
-        inputPanel.add(filePathField);
-        inputPanel.add(new JLabel());
-        inputPanel.add(browseButton);
+        filePathField.setEditable(false);
+        JButton browseButton = new JButton("Browse");
+        browseButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                filePathField.setText(file.getAbsolutePath());
+            }
+        });
 
-        JLabel commandLabel = new JLabel("Command:");
+        JPanel filePanel = new JPanel(new BorderLayout());
+        filePanel.add(filePathField, BorderLayout.CENTER);
+        filePanel.add(browseButton, BorderLayout.EAST);
+
         String[] commands = {"ENCRYPT", "DECRYPT", "BRUTE_FORCE"};
         commandComboBox = new JComboBox<>(commands);
-        inputPanel.add(commandLabel);
-        inputPanel.add(commandComboBox);
 
-        JLabel keyLabel = new JLabel("Key:");
         keyField = new JTextField();
-        inputPanel.add(keyLabel);
-        inputPanel.add(keyField);
 
-        add(inputPanel, BorderLayout.CENTER);
+        JButton executeButton = new JButton("Execute");
+        executeButton.addActionListener(e -> {
+            String command = (String) commandComboBox.getSelectedItem();
+            String filePath = filePathField.getText();
+            String key = keyField.getText();
+            String message = controller.processCommand(command, filePath, key);
+            messageArea.setText(message);
+        });
 
-        executeButton = new JButton("Execute");
-        add(executeButton, BorderLayout.SOUTH);
+        JButton bruteForceButton = new JButton("Brute Force Decrypt");
+        bruteForceButton.addActionListener(e -> {
+            String filePath = filePathField.getText();
+            CaesarCipher cipher = new CaesarCipher();
+            String bruteForceResults = cipher.bruteForceDecrypt(filePath);
+            bruteForceResultsArea.setText(bruteForceResults);
+        });
 
         messageArea = new JTextArea();
         messageArea.setEditable(false);
-        add(new JScrollPane(messageArea), BorderLayout.NORTH);
 
-        browseButton.addActionListener(e -> openFileChooser());
+        bruteForceResultsArea = new JTextArea();
+        bruteForceResultsArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(bruteForceResultsArea);
 
-        executeButton.addActionListener(e -> executeCommand());
+        frame.getContentPane().add(new JLabel("File Path:"));
+        frame.getContentPane().add(filePanel);
+        frame.getContentPane().add(new JLabel("Command:"));
+        frame.getContentPane().add(commandComboBox);
+        frame.getContentPane().add(new JLabel("Key:"));
+        frame.getContentPane().add(keyField);
+        frame.getContentPane().add(executeButton);
+        frame.getContentPane().add(bruteForceButton);
+        frame.getContentPane().add(new JScrollPane(messageArea));
+        frame.getContentPane().add(scrollPane);
 
-        setLocationRelativeTo(null);
-        setVisible(true);
-    }
-
-    private void openFileChooser() {
-        JFileChooser fileChooser = new JFileChooser();
-        int result = fileChooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fileChooser.getSelectedFile();
-            filePathField.setText(selectedFile.getAbsolutePath());
-        }
-    }
-
-    private void executeCommand() {
-        String command = (String) commandComboBox.getSelectedItem();
-        String filePath = filePathField.getText();
-        String key = keyField.getText();
-
-        try {
-            controller.processCommand(command, filePath, key);
-            messageArea.setText("Operation completed successfully!");
-        } catch (Exception ex) {
-            messageArea.setText("Error: " + ex.getMessage());
-        }
+        frame.setVisible(true);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new MainView(new MainController()));
+        EventQueue.invokeLater(() -> {
+            try {
+                MainView window = new MainView();
+                window.frame.setVisible(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 }
